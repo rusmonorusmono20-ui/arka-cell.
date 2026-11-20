@@ -1,0 +1,107 @@
+
+package com.arkacell.app;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.view.Gravity;
+import android.widget.*;
+import android.text.InputType;
+
+public class MainActivity extends Activity {
+
+    EditText nama, hp, tipe, rusak, biaya;
+    TextView hasil;
+    SharedPreferences data;
+
+    @Override
+    public void onCreate(Bundle b) {
+        super.onCreate(b);
+
+        data = getSharedPreferences("ARKACELL", MODE_PRIVATE);
+
+        LinearLayout layout = new LinearLayout(this);
+        layout.setOrientation(1);
+        layout.setPadding(24,24,24,24);
+        layout.setBackgroundColor(Color.rgb(245,247,250));
+
+        TextView judul = new TextView(this);
+        judul.setText("ARKA CELL");
+        judul.setTextSize(28);
+        judul.setTextColor(Color.rgb(20,70,130));
+        judul.setGravity(Gravity.CENTER);
+        layout.addView(judul);
+
+        TextView sub = new TextView(this);
+        sub.setText("NOTA SERVICE HANDPHONE");
+        sub.setGravity(Gravity.CENTER);
+        sub.setTextSize(15);
+        layout.addView(sub);
+
+        nama = field(layout,"Nama pelanggan");
+        hp = field(layout,"Nomor WhatsApp");
+        tipe = field(layout,"Merek / tipe HP");
+        rusak = field(layout,"Kerusakan HP");
+        biaya = field(layout,"Biaya servis (Rp)");
+        biaya.setInputType(InputType.TYPE_CLASS_NUMBER);
+
+        Button simpan = new Button(this);
+        simpan.setText("SIMPAN NOTA");
+        layout.addView(simpan);
+
+        hasil = new TextView(this);
+        hasil.setTextSize(16);
+        hasil.setTextColor(Color.BLACK);
+        layout.addView(hasil);
+
+        simpan.setOnClickListener(v -> {
+            String n = nama.getText().toString();
+            String h = hp.getText().toString();
+            String t = tipe.getText().toString();
+            String r = rusak.getText().toString();
+            String c = biaya.getText().toString();
+
+            if(n.isEmpty() || t.isEmpty() || c.isEmpty()) {
+                Toast.makeText(this,
+                    "Lengkapi data pelanggan, HP dan biaya",
+                    Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int nomor = data.getInt("nomor",0)+1;
+            data.edit().putInt("nomor",nomor).apply();
+
+            String nota = "ARKA CELL\n"
+                + "NOTA SERVICE HP\n"
+                + "Nomor: AC-" + nomor + "\n"
+                + "Pelanggan: " + n + "\n"
+                + "WhatsApp: " + h + "\n"
+                + "HP: " + t + "\n"
+                + "Kerusakan: " + r + "\n"
+                + "Biaya: Rp " + c + "\n"
+                + "Terima kasih";
+
+            hasil.setText(nota);
+
+            data.edit().putString(
+                "nota_terakhir",nota).apply();
+
+            Toast.makeText(this,
+                "Nota berhasil disimpan",
+                Toast.LENGTH_SHORT).show();
+        });
+
+        ScrollView scroll = new ScrollView(this);
+        scroll.addView(layout);
+        setContentView(scroll);
+    }
+
+    EditText field(LinearLayout layout,String hint) {
+        EditText e = new EditText(this);
+        e.setHint(hint);
+        e.setTextSize(16);
+        layout.addView(e);
+        return e;
+    }
+}
